@@ -11,15 +11,17 @@ directions.set('bm',new Vector(0,1))
 directions.set('br',new Vector(1,1))
 
 
-class TileRule{
+class RuleTile{
 
-    cb:(neighbours:Vector[]) => boolean
+    cb:(neighbours:Map<string,Vector>) => boolean
+    tileid:number
 }
 
 class AutoTiler{
 
     grid:number[][] = []
-    rules:TileRule[] = []
+    tiles:RuleTile[] = []
+    gridrect: Rect
 
     constructor(){
 
@@ -28,27 +30,29 @@ class AutoTiler{
 
 
     tile(grid:number[][]):number[][]{
-
+        
         var size = get2DArraySize(grid)
+        this.gridrect = new Rect(new Vector(0,0), size)
         var res = create2DArray(size,() => 0)
         size.loop2d(v => {
             var neighbours = this.getNeighbours(v)
-            var passedRules = this.rules.every(r => r.cb(neighbours))
-            
+            var firsttile = this.tiles.find(r => r.cb(neighbours))
+            res[v.x][v.y] = firsttile.tileid
         })
-
+        return res
     }
 
-    getNeighbours(pos:Vector):Vector[]{
-        var res = []
+    getNeighbours(pos:Vector):Map<string,Vector>{
+        var res = new Map<string,Vector>()
         for(var [alias,direction] of directions.entries()){
             var abspos = pos.c().add(direction)
-            if(true){
-                res.push(abspos)
+            if(this.gridrect.collidePoint(abspos)){
+                res.set(alias,abspos)
             }
         }   
         return res
     }
-
 }
+
+
 

@@ -18,6 +18,27 @@ var crret = createCanvas(screensize.x,screensize.y)
 var canvas = crret.canvas
 var ctxt = crret.ctxt
 
+var autotiler = new AutoTiler()
+
+var input = [
+    [0,0,0,0,0,0,0],
+    [0,0,1,1,1,0,0],
+    [0,0,1,1,1,0,0],
+    [0,0,1,1,1,0,0],
+    [0,0,1,1,1,0,1],
+]
+
+var output = [
+    [0,0,0,0,0,0,0],
+    [0,0,2,3,4,0,0],
+    [0,0,9,1,5,0,0],
+    [0,0,9,1,5,0,0],
+    [0,0,8,7,6,0,2],
+]
+
+//take a list of tiles in order each tile has a rule that looks at its surroundings
+//the first tile that passes it's rule gets placed at that spot else leave unchanged/zero
+
 
 loop((dt) => {
     ctxt.clearRect(0,0,screensize.x,screensize.y)
