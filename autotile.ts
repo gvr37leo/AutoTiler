@@ -13,8 +13,12 @@ directions.set('br',new Vector(1,1))
 
 class RuleTile{
 
-    cb:(neighbours:Map<string,Vector>) => boolean
-    tileid:number
+    constructor(
+        public tileid:number,
+        public cb:(neighbours:Map<string,number>) => boolean,
+    ){
+
+    }
 }
 
 class AutoTiler{
@@ -42,12 +46,16 @@ class AutoTiler{
         return res
     }
 
-    getNeighbours(pos:Vector):Map<string,Vector>{
-        var res = new Map<string,Vector>()
+    getNeighbours(pos:Vector):Map<string,number>{
+        var res = new Map<string,number>()
+        for(var [key,value] of directions){
+            res.set(key,0)
+        }
+
         for(var [alias,direction] of directions.entries()){
             var abspos = pos.c().add(direction)
             if(this.gridrect.collidePoint(abspos)){
-                res.set(alias,abspos)
+                res.set(alias,index2D(this.grid,abspos))
             }
         }   
         return res
