@@ -1,14 +1,25 @@
+enum Directions {tl,tm,tr,ml,mm,mr,bl,bm,br}
+var rotdir90 = new Map<Directions,Directions>()
+rotdir90.set(Directions.tl,Directions.tr)
+rotdir90.set(Directions.tm,Directions.mr)
+rotdir90.set(Directions.tr,Directions.br)
+rotdir90.set(Directions.ml,Directions.tm)
+rotdir90.set(Directions.mm,Directions.mm)
+rotdir90.set(Directions.mr,Directions.bm)
+rotdir90.set(Directions.bl,Directions.tl)
+rotdir90.set(Directions.bm,Directions.ml)
+rotdir90.set(Directions.br,Directions.bl)
 
-var directions = new Map<string,Vector>()
-directions.set('tl',new Vector(-1,-1))
-directions.set('tm',new Vector(0,-1))
-directions.set('tr',new Vector(1,-1))
-directions.set('ml',new Vector(-1,0))
-directions.set('mm',new Vector(0,0))
-directions.set('mr',new Vector(1,0))
-directions.set('bl',new Vector(-1,1))
-directions.set('bm',new Vector(0,1))
-directions.set('br',new Vector(1,1))
+var directions = new Map<Directions,Vector>()
+directions.set(Directions.tl,new Vector(-1,-1))
+directions.set(Directions.tm,new Vector(0,-1))
+directions.set(Directions.tr,new Vector(1,-1))
+directions.set(Directions.ml,new Vector(-1,0))
+directions.set(Directions.mm,new Vector(0,0))
+directions.set(Directions.mr,new Vector(1,0))
+directions.set(Directions.bl,new Vector(-1,1))
+directions.set(Directions.bm,new Vector(0,1))
+directions.set(Directions.br,new Vector(1,1))
 
 
 class RuleTile{
@@ -20,6 +31,11 @@ class RuleTile{
 
     }
 }
+
+function rotated(tileids:number[],{}){
+
+}
+
 
 class AutoTiler{
 

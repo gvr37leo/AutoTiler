@@ -20,6 +20,7 @@ var ctxt = crret.ctxt
 var tilesize = new Vector(30,30)
 var autotiler = new AutoTiler()
 autotiler.tiles = [
+    
     rotated([1,2,3,4],{ml:0,tm:0,mr:1,bm:1})
     mirrorredX([1,5],{ml:0,tm:0,mr:1,bm:1})
     mirrorredY([1,6],{ml:0,tm:0,mr:1,bm:1})
