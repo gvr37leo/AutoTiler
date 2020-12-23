@@ -1,26 +1,43 @@
 enum Directions {tl,tm,tr,ml,mm,mr,bl,bm,br}
-var rotdir90 = new Map<Directions,Directions>()
-rotdir90.set(Directions.tl,Directions.tr)
-rotdir90.set(Directions.tm,Directions.mr)
-rotdir90.set(Directions.tr,Directions.br)
-rotdir90.set(Directions.ml,Directions.tm)
-rotdir90.set(Directions.mm,Directions.mm)
-rotdir90.set(Directions.mr,Directions.bm)
-rotdir90.set(Directions.bl,Directions.tl)
-rotdir90.set(Directions.bm,Directions.ml)
-rotdir90.set(Directions.br,Directions.bl)
 
-var directions = new Map<Directions,Vector>()
-directions.set(Directions.tl,new Vector(-1,-1))
-directions.set(Directions.tm,new Vector(0,-1))
-directions.set(Directions.tr,new Vector(1,-1))
-directions.set(Directions.ml,new Vector(-1,0))
-directions.set(Directions.mm,new Vector(0,0))
-directions.set(Directions.mr,new Vector(1,0))
-directions.set(Directions.bl,new Vector(-1,1))
-directions.set(Directions.bm,new Vector(0,1))
-directions.set(Directions.br,new Vector(1,1))
+var dir2vecmap = new Map<Directions,Vector>()
+dir2vecmap.set(Directions.tl,new Vector(-1,-1))
+dir2vecmap.set(Directions.tm,new Vector(0,-1))
+dir2vecmap.set(Directions.tr,new Vector(1,-1))
+dir2vecmap.set(Directions.ml,new Vector(-1,0))
+dir2vecmap.set(Directions.mm,new Vector(0,0))
+dir2vecmap.set(Directions.mr,new Vector(1,0))
+dir2vecmap.set(Directions.bl,new Vector(-1,1))
+dir2vecmap.set(Directions.bm,new Vector(0,1))
+dir2vecmap.set(Directions.br,new Vector(1,1))
 
+var vec2dirmap:Directions[][] = [
+    [null,null,null],
+    [null,null,null],
+    [null,null,null],
+]
+
+for(var [dir,vec] of dir2vecmap){
+    vec2dirmap[vec.y][vec.x] = dir
+}
+
+function rotate90(v:Vector){
+    return new Vector(-v.y,v.x)
+}
+
+function rotate180(v:Vector){
+    return new Vector(-v.x,-v.y)
+}
+
+function rotate270(v:Vector){
+    return new Vector(v.y,-v.x)
+}
+
+function rotateDirection90(d:Directions){
+    var v = dir2vecmap.get(d)
+    var rotted = rotate90(v)
+    return vec2dirmap[rotted.y][rotted.x]
+}
 
 class RuleTile{
 
@@ -32,8 +49,20 @@ class RuleTile{
     }
 }
 
-function rotated(tileids:number[],{}){
+function rotated(tileids:number[],setofpositionwithids:Map<Directions,number>):RuleTile[]{
+    return []
+}
 
+function mirroredX(tileids:number[],setofpositionwithids:Map<Directions,number>):RuleTile[]{
+    return []
+}
+
+function mirroredY(tileids:number[],setofpositionwithids:Map<Directions,number>):RuleTile[]{
+    return []
+}
+
+function mirroredXY(tileids:number[],setofpositionwithids:Map<Directions,number>):RuleTile[]{
+    return []
 }
 
 
@@ -64,11 +93,11 @@ class AutoTiler{
 
     getNeighbours(pos:Vector):Map<string,number>{
         var res = new Map<string,number>()
-        for(var [key,value] of directions){
+        for(var [key,value] of dir2vecmap){
             res.set(key,0)
         }
 
-        for(var [alias,direction] of directions.entries()){
+        for(var [alias,direction] of dir2vecmap.entries()){
             var abspos = pos.c().add(direction)
             if(this.gridrect.collidePoint(abspos)){
                 res.set(alias,index2D(this.grid,abspos))
