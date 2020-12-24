@@ -43,26 +43,45 @@ class RuleTile{
 
     constructor(
         public tileid:number,
-        public cb:(neighbours:Map<string,number>) => boolean,
+        public cb:(neighbours:Map<Directions,number>) => boolean,
     ){
 
     }
 }
 
+
 function rotated(tileids:number[],setofpositionwithids:Map<Directions,number>):RuleTile[]{
-    return []
+    var res:RuleTile[] = []
+    let current = setofpositionwithids
+    for(let i = 0; i < tileids.length; i++){
+        new RuleTile(tileids[i],(neighbours) => {
+            return checkdirections(current,neighbours)
+        })
+        current = rotateDirectionMap(current)
+    }
+    return res
 }
 
-function mirroredX(tileids:number[],setofpositionwithids:Map<Directions,number>):RuleTile[]{
-    return []
+function mirrorX(tileid:number,setofpositionwithids:Map<Directions,number>):RuleTile[]{
+    var map = mirrorXDirectionMap(setofpositionwithids)
+    var original = new RuleTile(tileid,(neighbours) => {
+        return checkdirections(setofpositionwithids,neighbours)
+    })
+    var res = new RuleTile(tileid,(neighbours) => {
+        return checkdirections(map,neighbours)
+    })
+    return [original,res]
 }
 
-function mirroredY(tileids:number[],setofpositionwithids:Map<Directions,number>):RuleTile[]{
-    return []
-}
-
-function mirroredXY(tileids:number[],setofpositionwithids:Map<Directions,number>):RuleTile[]{
-    return []
+function mirrorY(tileid:number,setofpositionwithids:Map<Directions,number>):RuleTile[]{
+    var map = mirrorYDirectionMap(setofpositionwithids)
+    var original = new RuleTile(tileid,(neighbours) => {
+        return checkdirections(setofpositionwithids,neighbours)
+    })
+    var res = new RuleTile(tileid,(neighbours) => {
+        return checkdirections(map,neighbours)
+    })
+    return [original,res]
 }
 
 
@@ -91,8 +110,8 @@ class AutoTiler{
         return res
     }
 
-    getNeighbours(pos:Vector):Map<string,number>{
-        var res = new Map<string,number>()
+    getNeighbours(pos:Vector):Map<Directions,number>{
+        var res = new Map<Directions,number>()
         for(var [key,value] of dir2vecmap){
             res.set(key,0)
         }
@@ -105,6 +124,40 @@ class AutoTiler{
         }   
         return res
     }
+}
+
+function mirrorXDirectionMap(setofpositionwithids:Map<Directions,number>){
+    var newmap = new Map<Directions,number>()
+    for(var [dir,id] of setofpositionwithids){
+        var vdir = dir2vecmap.get(dir).c()
+        vdir.x = -vdir.x
+        var mirrordir = vec2dirmap[vdir.y][vdir.x]
+        newmap.set(mirrordir,id)
+    }
+    return newmap
+}
+
+function mirrorYDirectionMap(setofpositionwithids:Map<Directions,number>){
+    var newmap = new Map<Directions,number>()
+    for(var [dir,id] of setofpositionwithids){
+        var vdir = dir2vecmap.get(dir).c()
+        vdir.y = -vdir.y
+        var mirrordir = vec2dirmap[vdir.y][vdir.x]
+        newmap.set(mirrordir,id)
+    }
+    return newmap
+}
+
+function rotateDirectionMap(setofpositionwithids:Map<Directions,number>){
+    var newmap = new Map<Directions,number>()
+    for(var [dir,id] of setofpositionwithids){
+        newmap.set(rotateDirection90(dir),id)
+    }
+    return newmap
+}
+
+function checkdirections(checks:Map<Directions,number>,neighbours:Map<Directions,number>){
+    return Array.from(checks.entries()).every(([key,value]) =>  neighbours.get(key) == value)
 }
 
 

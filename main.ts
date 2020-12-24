@@ -12,7 +12,7 @@
 /// <reference path="autotile.ts" />
 
 
-
+var colors = ['white','red','blue','purple','pink','orange','yellow','green','cyan','brown']
 var screensize = new Vector(document.documentElement.clientWidth,document.documentElement.clientHeight)
 var crret = createCanvas(screensize.x,screensize.y)
 var canvas = crret.canvas
@@ -20,47 +20,8 @@ var ctxt = crret.ctxt
 var tilesize = new Vector(30,30)
 var autotiler = new AutoTiler()
 autotiler.tiles = [
-    
-    rotated([1,2,3,4],{ml:0,tm:0,mr:1,bm:1})
-    mirrorredX([1,5],{ml:0,tm:0,mr:1,bm:1})
-    mirrorredY([1,6],{ml:0,tm:0,mr:1,bm:1})
-
-    //tl
-    new RuleTile(1,(neighbours) => {
-        return checkdirections({ml:0,tm:0,mr:1,bm:1},neighbours)
-    }),
-    //tm
-    new RuleTile(2,(neighbours) => {
-        return checkdirections({ml:1,tm:0,mr:1,bm:1},neighbours)
-    }),
-    //tr
-    new RuleTile(3,(neighbours) => {
-        return checkdirections({ml:1,tm:0,mr:0,bm:1},neighbours)
-    }),
-    //ml
-    new RuleTile(4,(neighbours) => {
-        return checkdirections({ml:0,tm:1,mr:1,bm:1},neighbours)
-    }),
-    //mm
-    new RuleTile(5,(neighbours) => {
-        return checkdirections({ml:1,tm:1,mr:1,bm:1},neighbours)
-    }),
-    //mr
-    new RuleTile(6,(neighbours) => {
-        return checkdirections({ml:1,tm:1,mr:0,bm:1},neighbours)
-    }),
-    //bl
-    new RuleTile(7,(neighbours) => {
-        return checkdirections({ml:0,tm:1,mr:1,bm:0},neighbours)
-    }),
-    //bm
-    new RuleTile(8,(neighbours) => {
-        return checkdirections({ml:1,tm:1,mr:1,bm:0},neighbours)
-    }),
-    //br
-    new RuleTile(9,(neighbours) => {
-        return checkdirections({ml:1,tm:1,mr:0,bm:0},neighbours)
-    }),
+    ...rotated([1,2,3,4],new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1]])),//tl
+    ...rotated([1,2,3,4],new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1]])),//tm
 ]
 
 var input = [
@@ -94,6 +55,7 @@ function renderGrid(grid:number[][]){
     var size = get2DArraySize(grid)
     size.loop2d((v) => {
         var gridval = grid[v.y][v.x]
+        ctxt.fillStyle = colors[gridval]
         if(gridval > 0){
             ctxt.fillStyle = 'red'
         }else{
@@ -104,26 +66,3 @@ function renderGrid(grid:number[][]){
     })
 }
 
-function checkdirectionsRotated(checks:any,neighbours:Map<string,number>){
-
-}
-
-function createRuleTiles(){
-    
-}
-
-function checkdirectionsMirrored(checks:any,neighbours:Map<string,number>,x,y){
-    return Object.entries(checks).every(([key,value]) =>  neighbours.get(key) == value)
-}
-
-function checkdirections(checks:any,neighbours:Map<string,number>){
-    return Object.entries(checks).every(([key,value]) =>  neighbours.get(key) == value)
-}
-
-function checkneighbour(dir:string,value:number,neighbours:Map<string,number>){
-    if(neighbours.get(dir) == value){
-        return true
-    }else{
-        return false
-    }
-}
