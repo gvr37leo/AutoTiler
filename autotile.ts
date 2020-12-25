@@ -11,14 +11,10 @@ dir2vecmap.set(Directions.bl,new Vector(-1,1))
 dir2vecmap.set(Directions.bm,new Vector(0,1))
 dir2vecmap.set(Directions.br,new Vector(1,1))
 
-var vec2dirmap:Directions[][] = [
-    [null,null,null],
-    [null,null,null],
-    [null,null,null],
-]
+var vec2dirmap = new Map<number,Directions>()
 
 for(var [dir,vec] of dir2vecmap){
-    vec2dirmap[vec.y][vec.x] = dir
+    vec2dirmap.set(hashVector(vec),dir)
 }
 
 function rotate90(v:Vector){
@@ -36,7 +32,7 @@ function rotate270(v:Vector){
 function rotateDirection90(d:Directions){
     var v = dir2vecmap.get(d)
     var rotted = rotate90(v)
-    return vec2dirmap[rotted.y][rotted.x]
+    return vec2dirmap.get(hashVector(rotted))
 }
 
 class RuleTile{
@@ -49,16 +45,33 @@ class RuleTile{
     }
 }
 
+function normalRule(tileid:number,setofpositionwithids:Map<Directions,number>):RuleTile{
+    return new RuleTile(tileid,(neighbours) => {
+        return checkdirections(setofpositionwithids,neighbours)
+    })
+}
 
 function rotated(tileids:number[],setofpositionwithids:Map<Directions,number>):RuleTile[]{
     var res:RuleTile[] = []
-    let current = setofpositionwithids
-    for(let i = 0; i < tileids.length; i++){
-        new RuleTile(tileids[i],(neighbours) => {
-            return checkdirections(current,neighbours)
-        })
-        current = rotateDirectionMap(current)
-    }
+    let zero = setofpositionwithids
+    let _90 = rotateDirectionMap(zero)
+    let _180 = rotateDirectionMap(_90)
+    let _270 = rotateDirectionMap(_180)
+
+    res.push(new RuleTile(tileids[0],(neighbours) => {
+        return checkdirections(zero,neighbours)
+    }))
+    res.push(new RuleTile(tileids[1],(neighbours) => {
+        return checkdirections(_90,neighbours)
+    }))
+    res.push(new RuleTile(tileids[2],(neighbours) => {
+        return checkdirections(_180,neighbours)
+    }))
+    res.push(new RuleTile(tileids[3],(neighbours) => {
+        return checkdirections(_270,neighbours)
+    }))
+
+
     return res
 }
 
@@ -97,15 +110,17 @@ class AutoTiler{
 
 
 
-    tile(grid:number[][]):number[][]{
-        
+    process(grid:number[][]):number[][]{
+        this.grid = grid
         var size = get2DArraySize(grid)
-        this.gridrect = new Rect(new Vector(0,0), size)
+        this.gridrect = new Rect(new Vector(0,0), size.c().add(new Vector(-1,-1)))
         var res = create2DArray(size,() => 0)
         size.loop2d(v => {
             var neighbours = this.getNeighbours(v)
             var firsttile = this.tiles.find(r => r.cb(neighbours))
-            res[v.x][v.y] = firsttile.tileid
+            if(firsttile){
+                write2D(res,v,firsttile.tileid)
+            }
         })
         return res
     }
@@ -113,13 +128,13 @@ class AutoTiler{
     getNeighbours(pos:Vector):Map<Directions,number>{
         var res = new Map<Directions,number>()
         for(var [key,value] of dir2vecmap){
-            res.set(key,0)
+            res.set(key,0)//guarantees the void neigbhours are set to 0
         }
 
         for(var [alias,direction] of dir2vecmap.entries()){
             var abspos = pos.c().add(direction)
             if(this.gridrect.collidePoint(abspos)){
-                res.set(alias,index2D(this.grid,abspos))
+                res.set(alias,read2D(this.grid,abspos))
             }
         }   
         return res
@@ -131,7 +146,7 @@ function mirrorXDirectionMap(setofpositionwithids:Map<Directions,number>){
     for(var [dir,id] of setofpositionwithids){
         var vdir = dir2vecmap.get(dir).c()
         vdir.x = -vdir.x
-        var mirrordir = vec2dirmap[vdir.y][vdir.x]
+        var mirrordir = vec2dirmap.get(hashVector(vdir))
         newmap.set(mirrordir,id)
     }
     return newmap
@@ -142,7 +157,7 @@ function mirrorYDirectionMap(setofpositionwithids:Map<Directions,number>){
     for(var [dir,id] of setofpositionwithids){
         var vdir = dir2vecmap.get(dir).c()
         vdir.y = -vdir.y
-        var mirrordir = vec2dirmap[vdir.y][vdir.x]
+        var mirrordir = vec2dirmap.get(hashVector(vdir))
         newmap.set(mirrordir,id)
     }
     return newmap
@@ -159,6 +174,21 @@ function rotateDirectionMap(setofpositionwithids:Map<Directions,number>){
 function checkdirections(checks:Map<Directions,number>,neighbours:Map<Directions,number>){
     return Array.from(checks.entries()).every(([key,value]) =>  neighbours.get(key) == value)
 }
+
+
+function hashVector(v:Vector){
+    return v.x + v.y * 1000
+}
+
+function write2D<T>(arr:T[][],v:Vector,val:T){
+    arr[v.y][v.x] = val
+    return arr
+}
+
+function read2D<T>(arr:T[][],v:Vector):T{
+    return arr[v.y][v.x]
+}
+
 
 
 

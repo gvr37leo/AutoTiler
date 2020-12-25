@@ -172,7 +172,7 @@ function create2DArray<T>(size:Vector,filler:(pos:Vector) => T){
         result[i] = new Array(size.x)
     }
     size.loop2d(v => {
-        result[v.x][v.y] = filler(v)
+        result[v.y][v.x] = filler(v)
     })
     return result
 }
