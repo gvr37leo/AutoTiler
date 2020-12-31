@@ -10,10 +10,11 @@
 /// <reference path="libs/event/eventqueue.ts" />
 /// <reference path="libs/event/eventsystem.ts" />
 /// <reference path="autotile.ts" />
+/// <reference path="projectutils.ts" />
 
 
 
-var colors = ['white','red','blue','purple','pink','orange','yellow','green','cyan','brown']
+var colors = ['white','red','blue','purple','pink','orange','yellow','green','cyan','brown','coral','crimson']
 var screensize = new Vector(document.documentElement.clientWidth,document.documentElement.clientHeight)
 var crret = createCanvas(screensize.x,screensize.y)
 var canvas = crret.canvas
@@ -21,9 +22,10 @@ var ctxt = crret.ctxt
 var tilesize = new Vector(30,30)
 var autotiler = new AutoTiler()
 autotiler.tiles = [
-    normalRule(1,new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1]])),
-    ...rotated([2,3,4,5],new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1]])),//tl
-    ...rotated([6,7,8,9],new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1]])),//tm
+    normalRule(10, new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,0],[Directions.bm,0],[Directions.mm,1]])),
+    normalRule(1,new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),
+    ...rotated([2,3,4,5],new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tl
+    ...rotated([6,7,8,9],new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tm
 ]
 
 var input = [
@@ -34,11 +36,6 @@ var input = [
     [0,0,1,1,1,0,1],
 ]
 
-// var input = [
-//     [1,1,1],
-//     [1,1,1],
-//     [1,1,1],
-// ]
 
 var output = [
     [0,0,0,0,0,0,0],
@@ -52,19 +49,27 @@ output = autotiler.process(input)
 //take a list of tiles in order each tile has a rule that looks at its surroundings
 //the first tile that passes it's rule gets placed at that spot else leave unchanged/zero
 
+loadImagesCO([
+    './res/tileset.png',
+]).then((images) => {
+    var imagedata = convertImages2Imagedata(images)
 
-loop((dt) => {
-    ctxt.clearRect(0,0,screensize.x,screensize.y)
-
-    renderGrid(output)
+    loop((dt) => {
+        ctxt.clearRect(0,0,screensize.x,screensize.y)
+        
+        renderGrid(output)
+        ctxt.putImageData(imagedata[0],100,100)
+    })
 })
+
+
 
 
 function renderGrid(grid:number[][]){
     var size = get2DArraySize(grid)
     size.loop2d((v) => {
-        var gridval = read2D(grid,v)
-        ctxt.fillStyle = colors[gridval]
+        var tileid = read2D(grid,v)
+        ctxt.fillStyle = colors[tileid]
         var pos = v.c().mul(tilesize)
         ctxt.fillRect(pos.x,pos.y,tilesize.x,tilesize.y)
     })
