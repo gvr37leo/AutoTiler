@@ -20,6 +20,10 @@ class Vector{
         return this.map((arr,i) => arr[i] /= v.vals[i])
     }
 
+    floor():Vector{
+        return this.map((arr,i) => arr[i] = Math.floor(arr[i]))
+    }
+
     add(v:Vector):Vector{
         return this.map((arr,i) => arr[i] += v.vals[i])
     }

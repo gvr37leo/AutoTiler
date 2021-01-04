@@ -11,10 +11,11 @@
 /// <reference path="libs/event/eventsystem.ts" />
 /// <reference path="autotile.ts" />
 /// <reference path="projectutils.ts" />
+/// <reference path="list.ts" />
 
 
 
-var colors = ['white','red','blue','purple','pink','orange','yellow','green','cyan','brown','coral','crimson']
+var colors = ['white','red','blue','purple','pink','orange','yellow','green','cyan','brown','coral','crimson','deeppink','violet','black','lawngreen','lightgreen']
 var screensize = new Vector(document.documentElement.clientWidth,document.documentElement.clientHeight)
 var crret = createCanvas(screensize.x,screensize.y)
 var canvas = crret.canvas
@@ -22,11 +23,21 @@ var ctxt = crret.ctxt
 var tilesize = new Vector(30,30)
 var autotiler = new AutoTiler()
 autotiler.tiles = [
-    normalRule(10, new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,0],[Directions.bm,0],[Directions.mm,1]])),
-    normalRule(1,new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),
-    ...rotated([2,3,4,5],new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tl
-    ...rotated([6,7,8,9],new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tm
+    normalRule(10, new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,0],[Directions.bm,0],[Directions.mm,1]])),//alone
+    normalRule(1,new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//surrounded by cardinal directions/ center piece
+    ...rotated([2,3,4,5],new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tl corner piece
+    ...rotated([6,7,8,9],new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tm 3 neighbours wall piece
+
+    ...rotated([10,11,12,13],new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,0],[Directions.mm,1]])),//ml 1 neighbour
+    normalRule(15,new Map([[Directions.ml,0],[Directions.tm,1],[Directions.mr,0],[Directions.bm,1],[Directions.mm,1]])),// 2 neighbours opposite vertical
+    normalRule(16,new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,0],[Directions.mm,1]])),// 2 neighbours opposite horizontal
+
+    normalRule(14, new Map([[Directions.mm,1]])),//default catch rule (something went wrong if you see this one)
 ]
+
+var input2 = new List<number>()
+input2.set2d()
+input2.get2d()
 
 var input = [
     [0,0,0,0,0,0,0],
@@ -49,28 +60,43 @@ output = autotiler.process(input)
 //take a list of tiles in order each tile has a rule that looks at its surroundings
 //the first tile that passes it's rule gets placed at that spot else leave unchanged/zero
 
-loadImagesCO([
-    './res/tileset.png',
-]).then((images) => {
-    var imagedata = convertImages2Imagedata(images)
+var mousepos = startMouseListen(canvas)
 
-    loop((dt) => {
-        ctxt.clearRect(0,0,screensize.x,screensize.y)
-        
-        renderGrid(output)
-        ctxt.putImageData(imagedata[0],100,100)
-    })
+document.addEventListener('mousedown', e => {
+    var pos = getGridMousePos()
+    input[pos.y][pos.x] = 1 - input[pos.y][pos.x]
+    output = autotiler.process(input)
 })
 
 
+loop((dt) => {
+    ctxt.clearRect(0,0,screensize.x,screensize.y)
+    
+    renderGrid(output)
 
+    ctxt.fillStyle = 'grey'
+    drawgridcell(getGridMousePos())
+    
+})
+
+function getGridMousePos(){
+    return abs2grid(mousepos)
+}
+
+function drawgridcell(gridpos:Vector){
+    var pos = gridpos.c().mul(tilesize)
+    ctxt.fillRect(pos.x,pos.y,tilesize.x,tilesize.y)
+}
+
+function abs2grid(abs:Vector){
+    return abs.c().div(tilesize).floor()
+}
 
 function renderGrid(grid:number[][]){
     var size = get2DArraySize(grid)
     size.loop2d((v) => {
         var tileid = read2D(grid,v)
         ctxt.fillStyle = colors[tileid]
-        var pos = v.c().mul(tilesize)
-        ctxt.fillRect(pos.x,pos.y,tilesize.x,tilesize.y)
+        drawgridcell(v)
     })
 }

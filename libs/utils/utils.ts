@@ -36,6 +36,16 @@ function rangeContain(a1: number, a2: number, b1: number, b2: number):boolean{//
 }
 
 
+
+function startMouseListen(localcanvas:HTMLCanvasElement){
+    var mousepos = new Vector(0,0)
+    document.addEventListener('mousemove',(e) => {
+        mousepos.overwrite(getMousePos(localcanvas,e))
+    })
+    return mousepos
+}
+
+
 function getMousePos(canvas:HTMLCanvasElement, evt:MouseEvent) {
     var rect = canvas.getBoundingClientRect();
     return new Vector(evt.clientX - rect.left, evt.clientY - rect.top)
