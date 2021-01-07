@@ -100,29 +100,44 @@ function mirrorY(tileid:number,setofpositionwithids:Map<Directions,number>):Rule
 
 class AutoTiler{
 
-    grid:number[][] = []
+    input:List2D<number>
     tiles:RuleTile[] = []
     gridrect: Rect
+    output:number[][]
 
     constructor(){
 
     }
 
+    setup(input:List2D<number>){
+        this.input = input
+        
+        this.output = create2DArray(this.input.dimensions,() => 0)
+        this.gridrect = new Rect(new Vector(0,0), this.input.dimensions.c().add(new Vector(-1,-1)))
+    }
 
-
-    process(grid:number[][]):number[][]{
-        this.grid = grid
-        var size = get2DArraySize(grid)
-        this.gridrect = new Rect(new Vector(0,0), size.c().add(new Vector(-1,-1)))
-        var res = create2DArray(size,() => 0)
-        size.loop2d(v => {
-            var neighbours = this.getNeighbours(v)
-            var firsttile = this.tiles.find(r => r.cb(neighbours))
-            if(firsttile){
-                write2D(res,v,firsttile.tileid)
-            }
+    processAll():void{
+        this.input.dimensions.loop2d(v => {
+            this.processTile(v)
+            
         })
-        return res
+    }
+
+    processTile(v:Vector){
+        var neighbours = this.getNeighbours(v)
+        var firsttile = this.tiles.find(r => r.cb(neighbours))
+        if(firsttile){
+            write2D(this.output,v,firsttile.tileid)
+        }
+    }
+
+    processAround(pos:Vector){
+        for(var [alias,direction] of dir2vecmap.entries()){
+            var abspos = pos.c().add(direction)
+            if(this.gridrect.collidePoint(abspos)){
+                this.processTile(abspos)
+            }
+        } 
     }
 
     getNeighbours(pos:Vector):Map<Directions,number>{
@@ -134,7 +149,7 @@ class AutoTiler{
         for(var [alias,direction] of dir2vecmap.entries()){
             var abspos = pos.c().add(direction)
             if(this.gridrect.collidePoint(abspos)){
-                res.set(alias,read2D(this.grid,abspos))
+                res.set(alias,this.input.get(abspos))
             }
         }   
         return res

@@ -12,6 +12,7 @@
 /// <reference path="autotile.ts" />
 /// <reference path="projectutils.ts" />
 /// <reference path="list.ts" />
+/// <reference path="sprite.ts" />
 
 
 
@@ -21,62 +22,109 @@ var crret = createCanvas(screensize.x,screensize.y)
 var canvas = crret.canvas
 var ctxt = crret.ctxt
 var tilesize = new Vector(30,30)
-var autotiler = new AutoTiler()
-autotiler.tiles = [
-    normalRule(10, new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,0],[Directions.bm,0],[Directions.mm,1]])),//alone
-    normalRule(1,new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//surrounded by cardinal directions/ center piece
-    ...rotated([2,3,4,5],new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tl corner piece
-    ...rotated([6,7,8,9],new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tm 3 neighbours wall piece
 
-    ...rotated([10,11,12,13],new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,0],[Directions.mm,1]])),//ml 1 neighbour
-    normalRule(15,new Map([[Directions.ml,0],[Directions.tm,1],[Directions.mr,0],[Directions.bm,1],[Directions.mm,1]])),// 2 neighbours opposite vertical
-    normalRule(16,new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,0],[Directions.mm,1]])),// 2 neighbours opposite horizontal
-
-    normalRule(14, new Map([[Directions.mm,1]])),//default catch rule (something went wrong if you see this one)
-]
-
-var input2 = new List<number>()
-input2.set2d()
-input2.get2d()
-
-var input = [
-    [0,0,0,0,0,0,0],
-    [0,0,1,1,1,0,0],
-    [0,0,1,1,1,0,0],
-    [0,0,1,1,1,0,0],
-    [0,0,1,1,1,0,1],
-]
-
-
-var output = [
-    [0,0,0,0,0,0,0],
-    [0,0,2,3,4,0,0],
-    [0,0,9,1,5,0,0],
-    [0,0,9,1,5,0,0],
-    [0,0,8,7,6,0,2],
-]
-
-output = autotiler.process(input)
 //take a list of tiles in order each tile has a rule that looks at its surroundings
 //the first tile that passes it's rule gets placed at that spot else leave unchanged/zero
-
+enum PaintMode{erase,fill}
+var paintmode = PaintMode.fill
 var mousepos = startMouseListen(canvas)
 
-document.addEventListener('mousedown', e => {
-    var pos = getGridMousePos()
-    input[pos.y][pos.x] = 1 - input[pos.y][pos.x]
-    output = autotiler.process(input)
-})
 
 
-loop((dt) => {
-    ctxt.clearRect(0,0,screensize.x,screensize.y)
+
+var imagenames = ['void','surrounded','cornertl','openwalltm','ml1neighbour','alone','2neighboursopposite','error']
+loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
+    var autotiler = new AutoTiler()
+    var spritestore = new Store<Sprite>()
+    var voidsprite = spritestore.add(new Sprite(images[0],0,ctxt))
+    var surroundSprite = spritestore.add(new Sprite(images[1],0,ctxt)) 
+    var cornersprites = Sprite.rotated(images[2],ctxt).map(s => spritestore.add(s))
+    var threeneighbours = Sprite.rotated(images[3],ctxt).map(s => spritestore.add(s))
+    var oneneighbour = Sprite.rotated(images[4],ctxt).map(s => spritestore.add(s))
+    var twoneigboursoppositevert = spritestore.add(new Sprite(images[6],0.25,ctxt))
+    var twoneigboursoppositehor = spritestore.add(new Sprite(images[6],0,ctxt))
+    var alone = spritestore.add(new Sprite(images[5],0,ctxt)) 
+    var error = spritestore.add(new Sprite(images[7],0,ctxt)) 
+
+
+
+    // var input = new List2D<number>(new Vector(50,50),0)
+    autotiler.setup(new List2D(new Vector(50,50),0))
+    var savedinput =  localStorage.getItem('input')
+    if(savedinput != null){
+        var res = JSON.parse(savedinput)
+        autotiler.input.arr = res.arr
+    }
+     
+
+    autotiler.tiles = [
+        normalRule(voidsprite.id,new Map([[Directions.mm,0]])),
+        normalRule(surroundSprite.id, new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//surrounded by cardinal directions/ center piece
+        ...rotated(cornersprites.map(s => s.id), new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tl corner piece
+        ...rotated(threeneighbours.map(s => s.id), new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.mm,1]])),//tm 3 neighbours wall piece
+        ...rotated(oneneighbour.map(s => s.id), new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,0],[Directions.mm,1]])),//ml 1 neighbour
+        normalRule(twoneigboursoppositevert.id, new Map([[Directions.ml,0],[Directions.tm,1],[Directions.mr,0],[Directions.bm,1],[Directions.mm,1]])),// 2 neighbours opposite vertical
+        normalRule(twoneigboursoppositehor.id, new Map([[Directions.ml,1],[Directions.tm,0],[Directions.mr,1],[Directions.bm,0],[Directions.mm,1]])),// 2 neighbours opposite horizontal
+        normalRule(alone.id, new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,0],[Directions.bm,0],[Directions.mm,1]])),//alone
+        normalRule(error.id, new Map([[Directions.mm,1]])),//default catch rule (something went wrong if you see this one)
+    ]
     
-    renderGrid(output)
+    autotiler.processAll()
 
-    ctxt.fillStyle = 'grey'
-    drawgridcell(getGridMousePos())
+    document.addEventListener('mousedown', e => {
+        var pos = getGridMousePos()
+        if(autotiler.input.get(pos) == 1){
+            paintmode = PaintMode.erase
+        }else{
+            paintmode = PaintMode.fill
+        }
+        autotiler.input.set(pos,1 - autotiler.input.get(pos))
+        autotiler.processAround(pos)
+        localStorage.setItem('input',JSON.stringify(autotiler.input))
+    })
     
+    document.addEventListener('mousemove', e => {
+        var pos = getGridMousePos()
+        if(e.buttons == 1){
+            
+            var old = autotiler.input.get(pos)
+            if(paintmode == PaintMode.fill){
+                autotiler.input.set(pos,1)
+            }else{
+                autotiler.input.set(pos,0)
+            }
+            if(old != autotiler.input.get(pos)){
+                autotiler.processAround(pos)
+                localStorage.setItem('input',JSON.stringify(autotiler.input))
+            }
+        }
+    })
+    
+    loop((dt) => {
+        
+        ctxt.clearRect(0,0,screensize.x,screensize.y)
+        
+        renderGrid(autotiler.output)
+    
+        ctxt.fillStyle = 'grey'
+        
+        
+
+        drawgridcell(getGridMousePos())
+        
+    })
+
+    function renderGrid(grid:number[][]){
+        var size = get2DArraySize(grid)
+        size.loop2d((v) => {
+            var tileid = read2D(grid,v)
+            // ctxt.fillStyle = colors[tileid]
+            // drawgridcell(v)
+            // ctxt.drawImage(loadedimages[tileid % loadedimages.length],v.x * tilesize.x,v.y * tilesize.y,tilesize.x,tilesize.y)
+            var sprite = spritestore.get(tileid)
+            drawImage(sprite.img,ctxt,v.c().mul(tilesize),tilesize,sprite.rotations)
+        })
+    }
 })
 
 function getGridMousePos(){
@@ -92,11 +140,4 @@ function abs2grid(abs:Vector){
     return abs.c().div(tilesize).floor()
 }
 
-function renderGrid(grid:number[][]){
-    var size = get2DArraySize(grid)
-    size.loop2d((v) => {
-        var tileid = read2D(grid,v)
-        ctxt.fillStyle = colors[tileid]
-        drawgridcell(v)
-    })
-}
+
