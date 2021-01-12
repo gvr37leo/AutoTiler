@@ -33,7 +33,7 @@ var mousepos = startMouseListen(canvas)
 
 
 
-var imagenames = ['void','surrounded','cornertl','openwalltm','ml1neighbour','alone','2neighboursopposite','error','filled','boxcorner','boxinnercorner','openwall']
+var imagenames = ['void','surrounded','cornertl','openwalltm','ml1neighbour','alone','2neighboursopposite','error','filled','boxcorner','boxinnercorner','openwall','diagonal']
 loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     var autotiler = new AutoTiler()
     var spritestore = new Store<Sprite>()
@@ -51,6 +51,7 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     var boxcorner = Sprite.rotated(images[9],ctxt).map(s => spritestore.add(s))
     var boxinnercorner = Sprite.rotated(images[10],ctxt).map(s => spritestore.add(s))
     var openwall = Sprite.rotated(images[11],ctxt).map(s => spritestore.add(s))
+    var diagonal = Sprite.rotated(images[12],ctxt).map(s => spritestore.add(s))
 
     
 
@@ -74,43 +75,82 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     //     normalRule(error.id, new Map([[Directions.mm,1]])),//default catch rule (something went wrong if you see this one)
     // ]
 
+    // autotiler.tiles = [
+    //     // normalRule(voidsprite.id,new Map([[Directions.mm,0]])),
+    //     normalRule(filled.id,new Map([[Directions.mm,0]])),
+    //     ...rotated(boxinnercorner.map(s => s.id), new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1],[Directions.bl,0],[Directions.tl,1],[Directions.tr,1],[Directions.br,1],[Directions.mm,1]])),
+    //     normalRule(filled.id,new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1],[Directions.tl,1],[Directions.tr,1],[Directions.bl,1],[Directions.br,1],[Directions.mm,1]])),
+    //     ...rotated(boxcorner.map(s => s.id), new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.br,1],[Directions.mm,1]])),
+    //     ...rotated(openwall.map(s => s.id), new Map([[Directions.ml,1],[Directions.tl,1],[Directions.tr,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,0],[Directions.mm,1]])),
+    //     normalRule(error.id, new Map([[Directions.mm,1]])),
+    // ]
+
     autotiler.tiles = [
-        // normalRule(voidsprite.id,new Map([[Directions.mm,0]])),
-        normalRule(filled.id,new Map([[Directions.mm,0]])),
-        ...rotated(boxinnercorner.map(s => s.id), new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1],[Directions.bl,0],[Directions.tl,1],[Directions.tr,1],[Directions.br,1],[Directions.mm,1]])),
-        normalRule(filled.id,new Map([[Directions.ml,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,1],[Directions.tl,1],[Directions.tr,1],[Directions.bl,1],[Directions.br,1],[Directions.mm,1]])),
-        ...rotated(boxcorner.map(s => s.id), new Map([[Directions.ml,0],[Directions.tm,0],[Directions.mr,1],[Directions.bm,1],[Directions.br,1],[Directions.mm,1]])),
-        ...rotated(openwall.map(s => s.id), new Map([[Directions.ml,1],[Directions.tl,1],[Directions.tr,1],[Directions.tm,1],[Directions.mr,1],[Directions.bm,0],[Directions.mm,1]])),
-        normalRule(error.id, new Map([[Directions.mm,1]])),
+        normalRule(filled.id,new Map([[Directions.tl,0],[Directions.tr,0],[Directions.bl,0],[Directions.br,0]])),
+        normalRule(filled.id,new Map([[Directions.tl,1],[Directions.tr,1],[Directions.bl,1],[Directions.br,1]])),
+        ...rotated(boxcorner.map(s => s.id),new Map([[Directions.tl,0],[Directions.tr,0],[Directions.bl,0],[Directions.br,1]])),
+        ...rotated(boxinnercorner.map(s => s.id),new Map([[Directions.tl,1],[Directions.tr,1],[Directions.bl,0],[Directions.br,1]])),
+        ...rotated(openwall.map(s => s.id),new Map([[Directions.tl,1],[Directions.tr,1],[Directions.bl,0],[Directions.br,0]])),
+        ...rotated(diagonal.map(s => s.id),new Map([[Directions.tl,1],[Directions.tr,0],[Directions.bl,0],[Directions.br,1]])),
+        normalRule(error.id, new Map([]))
     ]
     
     autotiler.processAll()
 
+    // document.addEventListener('mousedown', e => {
+    //     var pos = getGridMousePos()
+    //     if(autotiler.input.get(pos) == 1){
+    //         paintmode = PaintMode.erase
+    //     }else{
+    //         paintmode = PaintMode.fill
+    //     }
+    //     autotiler.input.set(pos,1 - autotiler.input.get(pos))
+    //     autotiler.processAround(pos)
+    //     localStorage.setItem('input',JSON.stringify(autotiler.input))
+    // })
+    
+    // document.addEventListener('mousemove', e => {
+    //     var pos = getGridMousePos()
+    //     if(e.buttons == 1){
+            
+    //         var old = autotiler.input.get(pos)
+    //         if(paintmode == PaintMode.fill){
+    //             autotiler.input.set(pos,1)
+    //         }else{
+    //             autotiler.input.set(pos,0)
+    //         }
+    //         if(old != autotiler.input.get(pos)){
+    //             autotiler.processAround(pos)
+    //             localStorage.setItem('input',JSON.stringify(autotiler.input))
+    //         }
+    //     }
+    // })
+
     document.addEventListener('mousedown', e => {
-        var pos = getGridMousePos()
-        if(autotiler.input.get(pos) == 1){
+        var pos = getVertexMousePos()
+        if(autotiler.vertices.get(pos) == 1){
             paintmode = PaintMode.erase
         }else{
             paintmode = PaintMode.fill
         }
-        autotiler.input.set(pos,1 - autotiler.input.get(pos))
+        autotiler.vertices.set(pos,1 - autotiler.vertices.get(pos))
         autotiler.processAround(pos)
-        localStorage.setItem('input',JSON.stringify(autotiler.input))
+        // localStorage.setItem('input',JSON.stringify(autotiler.input))
     })
     
     document.addEventListener('mousemove', e => {
-        var pos = getGridMousePos()
+        var pos = getVertexMousePos()
         if(e.buttons == 1){
             
-            var old = autotiler.input.get(pos)
+            var old = autotiler.vertices.get(pos)
             if(paintmode == PaintMode.fill){
-                autotiler.input.set(pos,1)
+                autotiler.vertices.set(pos,1)
             }else{
-                autotiler.input.set(pos,0)
+                autotiler.vertices.set(pos,0)
             }
-            if(old != autotiler.input.get(pos)){
+            if(old != autotiler.vertices.get(pos)){
                 autotiler.processAround(pos)
-                localStorage.setItem('input',JSON.stringify(autotiler.input))
+                // localStorage.setItem('input',JSON.stringify(autotiler.input))
             }
         }
     })
@@ -122,10 +162,15 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
         renderGrid(autotiler.output)
     
         ctxt.fillStyle = 'grey'
-        
+
+        if(keys['x']){
+            ctxt.strokeStyle = 'grey'
+            drawGrid(ctxt,tilesize)
+        }
         
 
-        drawgridcell(getGridMousePos())
+        // drawgridcell(getGridMousePos())
+        drawVertexPos(getVertexMousePos())
         
     })
 
@@ -146,13 +191,32 @@ function getGridMousePos(){
     return abs2grid(mousepos)
 }
 
+function getVertexMousePos(){
+    return mousepos.c().div(tilesize).round()
+}
+
 function drawgridcell(gridpos:Vector){
     var pos = gridpos.c().mul(tilesize)
     ctxt.fillRect(pos.x,pos.y,tilesize.x,tilesize.y)
+}
+
+function drawVertexPos(vertexpos:Vector){
+    var pos = vertexpos.c().mul(tilesize)
+    var half = tilesize.c().scale(0.5)
+    ctxt.fillRect(pos.x - half.x,pos.y - half.y,tilesize.x,tilesize.y)
 }
 
 function abs2grid(abs:Vector){
     return abs.c().div(tilesize).floor()
 }
 
+function drawGrid(ctxt:CanvasRenderingContext2D,tilesize:Vector){
+    ctxt.beginPath()
+    screensize.c().div(tilesize).ceil().loop2d(v => {
+        var pos = v.c().mul(tilesize)
+        ctxt.rect(pos.x + 0.5,pos.y + 0.5,tilesize.x,tilesize.y)
+    })
+    ctxt.stroke()
+    
+}
 

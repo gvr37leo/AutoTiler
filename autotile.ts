@@ -101,8 +101,8 @@ function mirrorY(tileid:number,setofpositionwithids:Map<Directions,number>):Rule
 class AutoTiler{
 
     input:List2D<number>
+    vertices:List2D<number>
     tiles:RuleTile[] = []
-    gridrect: Rect
     output:number[][]
 
     constructor(){
@@ -111,14 +111,13 @@ class AutoTiler{
 
     setup(input:List2D<number>){
         this.input = input
-        
+        this.vertices = new List2D<number>(input.dimensions.c().add(new Vector(1,1)),0)
         this.output = create2DArray(this.input.dimensions,() => 0)
-        this.gridrect = new Rect(new Vector(0,0), this.input.dimensions.c().add(new Vector(-1,-1)))
     }
 
     processAll():void{
         this.input.dimensions.loop2d(v => {
-            this.processTile(v)
+            this.processTile2(v)
             
         })
     }
@@ -131,11 +130,19 @@ class AutoTiler{
         }
     }
 
+    processTile2(v:Vector){
+        var neighbours = this.getVertexNeighbours(v)
+        var firsttile = this.tiles.find(r => r.cb(neighbours))
+        if(firsttile){
+            write2D(this.output,v,firsttile.tileid)
+        }
+    }
+
     processAround(pos:Vector){
         for(var [alias,direction] of dir2vecmap.entries()){
             var abspos = pos.c().add(direction)
-            if(this.gridrect.collidePoint(abspos)){
-                this.processTile(abspos)
+            if(this.input.checkIndex(abspos)){
+                this.processTile2(abspos)
             }
         } 
     }
@@ -148,10 +155,25 @@ class AutoTiler{
 
         for(var [alias,direction] of dir2vecmap.entries()){
             var abspos = pos.c().add(direction)
-            if(this.gridrect.collidePoint(abspos)){
+            if(this.input.checkIndex(abspos)){
                 res.set(alias,this.input.get(abspos))
             }
         }   
+        return res
+    }
+
+    getVertexNeighbours(pos:Vector):Map<Directions,number>{
+        var res = new Map<Directions,number>()
+        for(var [key,value] of dir2vecmap){
+            res.set(key,0)//guarantees the void neigbhours are set to 0
+        }
+        // res.set(Directions.mm,this.input.get(pos))
+
+        var vertexneighbours = [new Vector(0,0),new Vector(1,0),new Vector(0,1),new Vector(1,1),]
+        var vertexdirections = [Directions.tl,Directions.tr,Directions.bl,Directions.br]
+        for(var i = 0; i < vertexneighbours.length;i++){
+            res.set(vertexdirections[i],this.vertices.get(pos.c().add(vertexneighbours[i]))) 
+        }
         return res
     }
 }
