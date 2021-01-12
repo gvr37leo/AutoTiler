@@ -102,6 +102,7 @@ class AutoTiler{
 
     input:List2D<number>
     vertices:List2D<number>
+    edges:List2D<[number,number]>
     tiles:RuleTile[] = []
     output:number[][]
 
@@ -112,6 +113,7 @@ class AutoTiler{
     setup(input:List2D<number>){
         this.input = input
         this.vertices = new List2D<number>(input.dimensions.c().add(new Vector(1,1)),0)
+        this.edges = new List2D<[number,number]>(input.dimensions.c().add(new Vector(1,1)),[0,0])
         this.output = create2DArray(this.input.dimensions,() => 0)
     }
 
@@ -174,6 +176,23 @@ class AutoTiler{
         for(var i = 0; i < vertexneighbours.length;i++){
             res.set(vertexdirections[i],this.vertices.get(pos.c().add(vertexneighbours[i]))) 
         }
+        return res
+    }
+
+    getEdgeNeighbours(pos:Vector):Map<Directions,number>{
+        var res = new Map<Directions,number>()
+        for(var [key,value] of dir2vecmap){
+            res.set(key,0)//guarantees the void neigbhours are set to 0
+        }
+
+        var topleftedges = this.edges.get(pos)
+        var botleft = this.edges.get(pos.c().add(new Vector(1,0)))
+        var topright = this.edges.get(pos.c().add(new Vector(0,1)))
+        res.set(Directions.tm,topleftedges[0])
+        res.set(Directions.mr,topright[1])
+        res.set(Directions.ml,topleftedges[1])
+        res.set(Directions.bm,botleft[0])
+
         return res
     }
 }
