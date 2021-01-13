@@ -3,7 +3,7 @@ class Camera{
     pos:Vector = new Vector(0,0)
     scale:Vector = new Vector(1,1)
 
-    constructor(public ctxt:CanvasRenderingContext2D,public screensize:Vector){
+    constructor(public ctxt:CanvasRenderingContext2D){
         
     }
 
