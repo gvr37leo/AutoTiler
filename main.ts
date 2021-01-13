@@ -24,6 +24,8 @@ var crret = createCanvas(screensize.x,screensize.y)
 var canvas = crret.canvas
 var ctxt = crret.ctxt
 var camera = new Camera(ctxt)
+camera.pos = new Vector(1585,831)
+camera.scale = new Vector(2.4,2.4)
 ctxt.imageSmoothingEnabled = false;
 var tilesize = new Vector(32,32)
 
@@ -165,7 +167,7 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     loop((dt) => {
         var worldmousepos = camera.screen2world(mousepos)
         ctxt.clearRect(0,0,screensize.x,screensize.y)
-        camera.pos.add(getMoveInputYFlipped().scale(100).scale(dt))
+        camera.pos.add(getMoveInputYFlipped().scale(500).scale(camera.scale.x).scale(dt))
         
         camera.begin()
 
