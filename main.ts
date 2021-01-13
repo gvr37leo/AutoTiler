@@ -13,6 +13,8 @@
 /// <reference path="projectutils.ts" />
 /// <reference path="list.ts" />
 /// <reference path="sprite.ts" />
+/// <reference path="camera.ts" />
+
 
 
 
@@ -21,6 +23,7 @@ var screensize = new Vector(document.documentElement.clientWidth,document.docume
 var crret = createCanvas(screensize.x,screensize.y)
 var canvas = crret.canvas
 var ctxt = crret.ctxt
+var camera = new Camera(ctxt)
 ctxt.imageSmoothingEnabled = false;
 var tilesize = new Vector(32,32)
 
@@ -154,10 +157,20 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
             }
         }
     })
+
+    document.addEventListener('wheel',e => {
+        camera.scale.scale(1 + e.deltaY * 0.001)
+    })
     
     loop((dt) => {
-        
+        var worldmousepos = camera.screen2world(mousepos)
         ctxt.clearRect(0,0,screensize.x,screensize.y)
+        camera.pos.add(getMoveInputYFlipped().scale(100).scale(dt))
+        
+        camera.begin()
+
+        
+        
         
         renderGrid(autotiler.output)
     
@@ -171,6 +184,7 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
 
         // drawgridcell(getGridMousePos())
         drawVertexPos(getVertexMousePos())
+        camera.end()
         
     })
 
@@ -188,11 +202,11 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
 })
 
 function getGridMousePos(){
-    return abs2grid(mousepos)
+    return abs2grid(camera.screen2world(mousepos))
 }
 
 function getVertexMousePos(){
-    return mousepos.c().div(tilesize).round()
+    return camera.screen2world(mousepos).c().div(tilesize).round()
 }
 
 function drawgridcell(gridpos:Vector){
