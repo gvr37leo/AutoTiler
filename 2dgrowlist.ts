@@ -1,6 +1,6 @@
 class List2D2<T>{
 
-    list:NegativeList<T>
+    list:NegativeList<NegativeList<T>>
     bounding:Rect
 
     constructor(){
@@ -10,57 +10,47 @@ class List2D2<T>{
         this.list.resize(size.x * size.y)
     }
 
-    getBounding(){
+    // getBounding(){
+    //     return new Rect()
+    // }
 
+    loop2d(cb:(v:Vector) => void){
+        var index = new Vector(0,0)
+        for(index.x = this.list.start(); index.x < this.list.end(); index.x++){
+            var list = this.list.get(i)
+            for(index.y = list.start(); index.y < list.end(); index.y++){
+                cb(index)
+            }
+        }
     }
 
     get(index:Vector):T{
         if(this.isInBounds(index)){
-            this.list.get(this.rel2abs(index))
+            return this.list.get(index.x).get(index.y)
         }else{
             return null
         }
     }
 
     set(index:Vector,val:T){
-        if(this.isInBounds(index) == false){
-            this.resize(null)
+        if(this.list.isInBounds(index) == false){
+            this.list.set(new NegativeList<T>(),index.x)
         }
-        this.list.set(val,this.rel2abs(index))
-        //goes wrong when list resizes and indexes go to the wrong place
-        //if the bounding box needs to change then a resize needs to happen to move all the values to their new correct spot
+        this.list.get(index.x).set(val,index.y)
     }
 
-    expandBoundingBox(newpoint:Vector){
-        return new Rect(
-            new Vector(Math.min(newpoint.x,this.bounding.min.x),Math.min(newpoint.y,this.bounding.min.y)),
-            new Vector(Math.max(newpoint.x,this.bounding.max.x),Math.max(newpoint.y,this.bounding.max.y))
-        )
-    }
+    // expandBoundingBox(newpoint:Vector){
+    //     return new Rect(
+    //         new Vector(Math.min(newpoint.x,this.bounding.min.x),Math.min(newpoint.y,this.bounding.min.y)),
+    //         new Vector(Math.max(newpoint.x,this.bounding.max.x),Math.max(newpoint.y,this.bounding.max.y))
+    //     )
+    // }
 
     isInBounds(index:Vector):boolean{
-        inRange(this.bounding.min.x,this.bounding.max.x,index.x)
-        inRange(this.bounding.min.y,this.bounding.max.y,index.y)
+        
 
-        return this.bounding.collidePoint(index)
-    }
-
-    resize(box:Rect){
-        var size = box.size()
-
-        var newarr = new NegativeList<T>()
-        newarr.resize(size.x * size.y)
-
-        this.bounding.loop(v => {
-            newarr.set(this.get(v),this.rel2abs(v))
-        })
-        this.bounding = box
-        this.list = newarr
-        //copy old list to new list
-    }
-
-    rel2abs(index:Vector){
-        return  index.y * this.bounding.size().x + index.x
+        return inRange(this.bounding.min.x,this.bounding.max.x - 1,index.x) &&
+        inRange(this.bounding.min.y,this.bounding.max.y - 1,index.y)
     }
 }
 
@@ -93,6 +83,14 @@ class NegativeList<T>{
         this.checkResize()
         var absindex  = this.IndexRel2abs(index)
         this.arr[absindex] = val
+    }
+
+    start(){
+        return this.negsize
+    }
+
+    end(){
+        return this.possize
     }
 
     length(){
