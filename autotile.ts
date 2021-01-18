@@ -114,7 +114,7 @@ class AutoTiler{
     }
 
     processAll():void{
-        this.input.loop2d(v => {
+        this.vertices.loop2d(v => {
             this.processTile2(v)
             
         })
@@ -137,11 +137,10 @@ class AutoTiler{
     }
 
     processAround(pos:Vector){
-        for(var [alias,direction] of dir2vecmap.entries()){
+        var dirs = [new Vector(-1,-1),new Vector(0,-1),new Vector(0,0),new Vector(-1,0)]
+        for(var direction of dirs){
             var abspos = pos.c().add(direction)
-            if(this.input.isInBounds(abspos)){
-                this.processTile2(abspos)
-            }
+            this.processTile2(abspos)
         } 
     }
 
@@ -153,9 +152,7 @@ class AutoTiler{
 
         for(var [alias,direction] of dir2vecmap.entries()){
             var abspos = pos.c().add(direction)
-            if(this.input.isInBounds(abspos)){
-                res.set(alias,this.input.get(abspos))
-            }
+            res.set(alias,this.input.get(abspos))
         }   
         return res
     }
@@ -224,7 +221,7 @@ function rotateDirectionMap(setofpositionwithids:Map<Directions,number>){
 }
 
 function checkdirections(checks:Map<Directions,number>,neighbours:Map<Directions,number>){
-    return Array.from(checks.entries()).every(([key,value]) =>  neighbours.get(key) == value)
+    return Array.from(checks.entries()).every(([key,value]) => ((neighbours.get(key) ?? 0) == value))
 }
 
 

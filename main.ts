@@ -25,8 +25,8 @@ var crret = createCanvas(screensize.x,screensize.y)
 var canvas = crret.canvas
 var ctxt = crret.ctxt
 var camera = new Camera(ctxt)
-camera.pos = new Vector(1585,831)
-camera.scale = new Vector(2.4,2.4)
+camera.pos = new Vector(0,0)
+camera.scale = new Vector(1,1)
 ctxt.imageSmoothingEnabled = false;
 var tilesize = new Vector(32,32)
 
@@ -36,10 +36,6 @@ enum PaintMode{erase,fill}
 var paintmode = PaintMode.fill
 var mousepos = startMouseListen(canvas)
 
-var testlist = new List2D2<number>()
-testlist.set(new Vector(3,2),2)
-testlist.set(new Vector(-3,-1),2)
-testlist.set(new Vector(10,10),3)
 
 
 
@@ -47,6 +43,7 @@ testlist.set(new Vector(10,10),3)
 var imagenames = ['void','surrounded','cornertl','openwalltm','ml1neighbour','alone','2neighboursopposite','error','filled','boxcorner','boxinnercorner','openwall','diagonal']
 loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     var autotiler = new AutoTiler()
+    // autotiler.vertices.set(new Vector(0,0),1)
     var spritestore = new Store<Sprite>()
     var voidsprite = spritestore.add(new Sprite(images[0],0,ctxt))
     // var surroundSprite = spritestore.add(new Sprite(images[1],0,ctxt)) 
@@ -198,17 +195,19 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
 
     function renderGrid(grid:List2D2<number>){
         grid.loop2d((v,tileid) => {
-            var sprite = spritestore.get(tileid)
+            var sprite = spritestore.get(tileid ?? 0)
             drawImage(sprite.img,ctxt,v.c().mul(tilesize),tilesize,sprite.rotations)
         })
     }
 })
 
 function getGridMousePos(){
+    // return abs2grid(mousepos)
     return abs2grid(camera.screen2world(mousepos))
 }
 
 function getVertexMousePos(){
+    // return mousepos.c().div(tilesize).round()
     return camera.screen2world(mousepos).c().div(tilesize).round()
 }
 

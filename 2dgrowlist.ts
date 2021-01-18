@@ -15,8 +15,10 @@ class List2D2<T>{
         var index = new Vector(0,0)
         for(index.x = this.list.start(); index.x < this.list.end(); index.x++){
             var list = this.list.get(index.x)
-            for(index.y = list.start(); index.y < list.end(); index.y++){
-                cb(index,list.get(index.y))
+            if(list != null){
+                for(index.y = list.start(); index.y < list.end(); index.y++){
+                    cb(index,list.get(index.y))
+                }
             }
         }
     }
@@ -35,6 +37,11 @@ class List2D2<T>{
             this.list.set(new NegativeList<T>(),index.x)
         }
         this.list.get(index.x).set(val,index.y)
+
+        // this.bounding.min.x = Math.min()
+        // this.bounding.min.y
+        // this.bounding.max.x
+        // this.bounding.max.y
     }
 
 
