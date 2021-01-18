@@ -66,12 +66,12 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
 
     
 
-    autotiler.setup(new List2D( new Vector(100,50),0))
-    var savedinput =  localStorage.getItem('input')
-    if(savedinput != null){
-        var res = JSON.parse(savedinput)
-        autotiler.input.arr = res.arr
-    }
+    // autotiler.setup(new List2D( new Vector(100,50),0))
+    // var savedinput =  localStorage.getItem('input')
+    // if(savedinput != null){
+    //     var res = JSON.parse(savedinput)
+    //     autotiler.input.arr = res.arr
+    // }
      
 
     // autotiler.tiles = [
@@ -196,13 +196,8 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
         
     })
 
-    function renderGrid(grid:number[][]){
-        var size = get2DArraySize(grid)
-        size.loop2d((v) => {
-            var tileid = read2D(grid,v)
-            // ctxt.fillStyle = colors[tileid]
-            // drawgridcell(v)
-            // ctxt.drawImage(loadedimages[tileid % loadedimages.length],v.x * tilesize.x,v.y * tilesize.y,tilesize.x,tilesize.y)
+    function renderGrid(grid:List2D2<number>){
+        grid.loop2d((v,tileid) => {
             var sprite = spritestore.get(tileid)
             drawImage(sprite.img,ctxt,v.c().mul(tilesize),tilesize,sprite.rotations)
         })

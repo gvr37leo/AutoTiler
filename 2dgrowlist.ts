@@ -10,48 +10,34 @@ class List2D2<T>{
         this.list.resize(size.x * size.y)
     }
 
-    // getBounding(){
-    //     return new Rect()
-    // }
 
-    loop2d(cb:(v:Vector) => void){
+    loop2d(cb:(v:Vector,val:T) => void){
         var index = new Vector(0,0)
         for(index.x = this.list.start(); index.x < this.list.end(); index.x++){
-            var list = this.list.get(i)
+            var list = this.list.get(index.x)
             for(index.y = list.start(); index.y < list.end(); index.y++){
-                cb(index)
+                cb(index,list.get(index.y))
             }
         }
     }
+    
+    isInBounds(index:Vector):boolean{
+        return inRange(this.bounding.min.x,this.bounding.max.x - 1,index.x) &&
+        inRange(this.bounding.min.y,this.bounding.max.y - 1,index.y)
+    }
 
     get(index:Vector):T{
-        if(this.isInBounds(index)){
-            return this.list.get(index.x).get(index.y)
-        }else{
-            return null
-        }
+        return this.list.get(index.x)?.get(index.y) ?? null
     }
 
     set(index:Vector,val:T){
-        if(this.list.isInBounds(index) == false){
+        if(this.list.get(index.x) == null){
             this.list.set(new NegativeList<T>(),index.x)
         }
         this.list.get(index.x).set(val,index.y)
     }
 
-    // expandBoundingBox(newpoint:Vector){
-    //     return new Rect(
-    //         new Vector(Math.min(newpoint.x,this.bounding.min.x),Math.min(newpoint.y,this.bounding.min.y)),
-    //         new Vector(Math.max(newpoint.x,this.bounding.max.x),Math.max(newpoint.y,this.bounding.max.y))
-    //     )
-    // }
 
-    isInBounds(index:Vector):boolean{
-        
-
-        return inRange(this.bounding.min.x,this.bounding.max.x - 1,index.x) &&
-        inRange(this.bounding.min.y,this.bounding.max.y - 1,index.y)
-    }
 }
 
 class NegativeList<T>{
@@ -66,7 +52,7 @@ class NegativeList<T>{
         if(this.isInBounds(index)){
             return this.arr[this.IndexRel2abs(index)]
         }else{
-            throw "out of bounds"
+            return null
         }
         
     }
@@ -78,7 +64,7 @@ class NegativeList<T>{
         if(index < 0){
             this.negsize = Math.max(Math.abs(index),this.negsize)
         }else{
-            this.possize = Math.max(index,this.possize)
+            this.possize = Math.max(index + 1,this.possize)
         }
         this.checkResize()
         var absindex  = this.IndexRel2abs(index)

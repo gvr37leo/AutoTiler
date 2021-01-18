@@ -100,25 +100,21 @@ function mirrorY(tileid:number,setofpositionwithids:Map<Directions,number>):Rule
 
 class AutoTiler{
 
-    input:List2D<number>
-    vertices:List2D<number>
-    edges:List2D<[number,number]>
+    input:List2D2<number>
+    vertices:List2D2<number>
+    edges:List2D2<[number,number]>
     tiles:RuleTile[] = []
-    output:number[][]
+    output:List2D2<number>
 
     constructor(){
-
-    }
-
-    setup(input:List2D<number>){
-        this.input = input
-        this.vertices = new List2D<number>(input.dimensions.c().add(new Vector(1,1)),0)
-        this.edges = new List2D<[number,number]>(input.dimensions.c().add(new Vector(1,1)),[0,0])
-        this.output = create2DArray(this.input.dimensions,() => 0)
+        this.input = new List2D2<number>()
+        this.vertices = new List2D2<number>()
+        this.edges = new List2D2<[number,number]>()
+        this.output = new List2D2<number>()
     }
 
     processAll():void{
-        this.input.dimensions.loop2d(v => {
+        this.input.loop2d(v => {
             this.processTile2(v)
             
         })
@@ -128,7 +124,7 @@ class AutoTiler{
         var neighbours = this.getNeighbours(v)
         var firsttile = this.tiles.find(r => r.cb(neighbours))
         if(firsttile){
-            write2D(this.output,v,firsttile.tileid)
+            this.output.set(v,firsttile.tileid)
         }
     }
 
@@ -136,14 +132,14 @@ class AutoTiler{
         var neighbours = this.getVertexNeighbours(v)
         var firsttile = this.tiles.find(r => r.cb(neighbours))
         if(firsttile){
-            write2D(this.output,v,firsttile.tileid)
+            this.output.set(v,firsttile.tileid)
         }
     }
 
     processAround(pos:Vector){
         for(var [alias,direction] of dir2vecmap.entries()){
             var abspos = pos.c().add(direction)
-            if(this.input.checkIndex(abspos)){
+            if(this.input.isInBounds(abspos)){
                 this.processTile2(abspos)
             }
         } 
@@ -157,7 +153,7 @@ class AutoTiler{
 
         for(var [alias,direction] of dir2vecmap.entries()){
             var abspos = pos.c().add(direction)
-            if(this.input.checkIndex(abspos)){
+            if(this.input.isInBounds(abspos)){
                 res.set(alias,this.input.get(abspos))
             }
         }   
