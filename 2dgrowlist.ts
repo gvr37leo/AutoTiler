@@ -79,7 +79,7 @@ class NegativeList<T>{
     }
 
     start(){
-        return this.negsize
+        return -this.negsize
     }
 
     end(){
