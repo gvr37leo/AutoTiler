@@ -14,6 +14,7 @@
 /// <reference path="list.ts" />
 /// <reference path="sprite.ts" />
 /// <reference path="camera.ts" />
+/// <reference path="2dgrowlist.ts" />
 
 
 
@@ -34,6 +35,10 @@ var tilesize = new Vector(32,32)
 enum PaintMode{erase,fill}
 var paintmode = PaintMode.fill
 var mousepos = startMouseListen(canvas)
+
+var testlist = new List2D2<number>()
+testlist.set(new Vector(3,2),2)
+testlist.set(new Vector(-3,-1),2)
 
 
 
