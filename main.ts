@@ -39,6 +39,7 @@ var mousepos = startMouseListen(canvas)
 var testlist = new List2D2<number>()
 testlist.set(new Vector(3,2),2)
 testlist.set(new Vector(-3,-1),2)
+testlist.set(new Vector(10,10),3)
 
 
 

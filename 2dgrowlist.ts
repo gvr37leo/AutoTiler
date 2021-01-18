@@ -31,7 +31,17 @@ class List2D2<T>{
         //if the bounding box needs to change then a resize needs to happen to move all the values to their new correct spot
     }
 
+    expandBoundingBox(newpoint:Vector){
+        return new Rect(
+            new Vector(Math.min(newpoint.x,this.bounding.min.x),Math.min(newpoint.y,this.bounding.min.y)),
+            new Vector(Math.max(newpoint.x,this.bounding.max.x),Math.max(newpoint.y,this.bounding.max.y))
+        )
+    }
+
     isInBounds(index:Vector):boolean{
+        inRange(this.bounding.min.x,this.bounding.max.x,index.x)
+        inRange(this.bounding.min.y,this.bounding.max.y,index.y)
+
         return this.bounding.collidePoint(index)
     }
 
