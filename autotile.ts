@@ -116,7 +116,6 @@ class AutoTiler{
     processAll():void{
         this.vertices.loop2d(v => {
             this.processTile2(v)
-            
         })
     }
 

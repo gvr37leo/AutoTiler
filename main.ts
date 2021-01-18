@@ -142,7 +142,8 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
             paintmode = PaintMode.fill
         }
         autotiler.vertices.set(pos,1 - autotiler.vertices.get(pos))
-        autotiler.processAround(pos)
+        // autotiler.processAround(pos)
+        autotiler.processAll()
         // localStorage.setItem('input',JSON.stringify(autotiler.input))
     })
     
@@ -157,7 +158,8 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
                 autotiler.vertices.set(pos,0)
             }
             if(old != autotiler.vertices.get(pos)){
-                autotiler.processAround(pos)
+                // autotiler.processAround(pos)
+                autotiler.processAll()
                 // localStorage.setItem('input',JSON.stringify(autotiler.input))
             }
         }
