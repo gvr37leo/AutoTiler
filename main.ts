@@ -171,7 +171,8 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     
     loop((dt) => {
         var worldmousepos = camera.screen2world(mousepos)
-        ctxt.clearRect(0,0,screensize.x,screensize.y)
+        ctxt.fillStyle = 'darkgreen'
+        ctxt.fillRect(0,0,screensize.x,screensize.y)
         camera.pos.add(getMoveInputYFlipped().scale(500).scale(camera.scale.x).scale(dt))
         
         camera.begin()
