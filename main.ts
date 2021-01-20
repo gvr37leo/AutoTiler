@@ -45,6 +45,7 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     var autotiler = new AutoTiler()
     // autotiler.vertices.set(new Vector(0,0),1)
     var spritestore = new Store<Sprite>()
+    var filled = spritestore.add(new Sprite(images[8],0,ctxt))
     var voidsprite = spritestore.add(new Sprite(images[0],0,ctxt))
     // var surroundSprite = spritestore.add(new Sprite(images[1],0,ctxt)) 
     // var cornersprites = Sprite.rotated(images[2],ctxt).map(s => spritestore.add(s))
@@ -55,7 +56,7 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     // var alone = spritestore.add(new Sprite(images[5],0,ctxt)) 
     var error = spritestore.add(new Sprite(images[7],0,ctxt))
 
-    var filled = spritestore.add(new Sprite(images[8],0,ctxt))
+    
     var boxcorner = Sprite.rotated(images[9],ctxt).map(s => spritestore.add(s))
     var boxinnercorner = Sprite.rotated(images[10],ctxt).map(s => spritestore.add(s))
     var openwall = Sprite.rotated(images[11],ctxt).map(s => spritestore.add(s))
@@ -142,8 +143,8 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
             paintmode = PaintMode.fill
         }
         autotiler.vertices.set(pos,1 - autotiler.vertices.get(pos))
-        // autotiler.processAround(pos)
-        autotiler.processAll()
+        autotiler.processAround(pos)
+        // autotiler.processAll()
         // localStorage.setItem('input',JSON.stringify(autotiler.input))
     })
     
@@ -154,12 +155,13 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
             var old = autotiler.vertices.get(pos)
             if(paintmode == PaintMode.fill){
                 autotiler.vertices.set(pos,1)
+                //should have a set and process function for vertices/cells
             }else{
                 autotiler.vertices.set(pos,0)
             }
             if(old != autotiler.vertices.get(pos)){
-                // autotiler.processAround(pos)
-                autotiler.processAll()
+                autotiler.processAround(pos)
+                // autotiler.processAll()
                 // localStorage.setItem('input',JSON.stringify(autotiler.input))
             }
         }
@@ -171,7 +173,7 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     
     loop((dt) => {
         var worldmousepos = camera.screen2world(mousepos)
-        ctxt.fillStyle = 'darkgreen'
+        ctxt.fillStyle = 'black'
         ctxt.fillRect(0,0,screensize.x,screensize.y)
         camera.pos.add(getMoveInputYFlipped().scale(500).scale(camera.scale.x).scale(dt))
         
