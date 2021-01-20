@@ -142,30 +142,32 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
         }else{
             paintmode = PaintMode.fill
         }
-        autotiler.vertices.set(pos,1 - autotiler.vertices.get(pos))
-        autotiler.processAround(pos)
-        // autotiler.processAll()
-        // localStorage.setItem('input',JSON.stringify(autotiler.input))
+        paintEdge(pos)
     })
     
     document.addEventListener('mousemove', e => {
         var pos = getVertexMousePos()
         if(e.buttons == 1){
-            
-            var old = autotiler.vertices.get(pos)
-            if(paintmode == PaintMode.fill){
-                autotiler.vertices.set(pos,1)
-                //should have a set and process function for vertices/cells
-            }else{
-                autotiler.vertices.set(pos,0)
-            }
-            if(old != autotiler.vertices.get(pos)){
-                autotiler.processAround(pos)
-                // autotiler.processAll()
-                // localStorage.setItem('input',JSON.stringify(autotiler.input))
-            }
+            paintEdge(pos)
         }
     })
+
+    function painEdgeLine(from:Vector,to:Vector){
+        
+    }
+
+    function paintEdge(pos:Vector){
+        var old = autotiler.vertices.get(pos)
+        if(paintmode == PaintMode.fill){
+            autotiler.vertices.set(pos,1)
+        }else{
+            autotiler.vertices.set(pos,0)
+        }
+        if(old != autotiler.vertices.get(pos)){
+            autotiler.processAround(pos)
+            // localStorage.setItem('input',JSON.stringify(autotiler.input))
+        }
+    }
 
     document.addEventListener('wheel',e => {
         camera.scale.scale(1 + e.deltaY * 0.001)
