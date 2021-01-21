@@ -34,8 +34,9 @@ var tilesize = new Vector(32,32)
 //the first tile that passes it's rule gets placed at that spot else leave unchanged/zero
 enum PaintMode{erase,fill}
 var paintmode = PaintMode.fill
-var mousepos = startMouseListen(canvas)
 
+
+var [mousepos,oldmousepos] = startMouseListen(canvas)
 
 
 
@@ -136,7 +137,7 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     // })
 
     document.addEventListener('mousedown', e => {
-        var pos = getVertexMousePos()
+        var pos = getVertexMousePos(mousepos)
         if(autotiler.vertices.get(pos) == 1){
             paintmode = PaintMode.erase
         }else{
@@ -146,14 +147,44 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     })
     
     document.addEventListener('mousemove', e => {
-        var pos = getVertexMousePos()
+        var oldpos = getVertexMousePos(oldmousepos)
+        var newpos = getVertexMousePos(mousepos)
         if(e.buttons == 1){
-            paintEdge(pos)
+            // paintEdge(newpos)
+            fullLine(oldpos,newpos).forEach(pos => paintEdge(pos))
         }
     })
 
-    function painEdgeLine(from:Vector,to:Vector){
+    function line(a:Vector,b:Vector){
+        var res:Vector[] = []
+        var a2b = a.to(b)
+        var diagonaldistance = Math.max(Math.abs(a2b.x),Math.abs(a2b.y))
+
+        for(var step = 0; step <= diagonaldistance;step++){
+            var r = diagonaldistance == 0 ? 0 : step / diagonaldistance
+            res.push(a.lerp(b,r).round())
+        }
+        return res
+    }
+
+    function fullLine(a:Vector,b:Vector){
         
+        var a2b = a.to(b)
+        var dist = new Vector(Math.abs(a2b.x),Math.abs(a2b.y))
+        var sign = new Vector(Math.sign(a2b.x),Math.sign(a2b.y))
+        var current = a.c()
+        var res:Vector[] = [current.c()]
+        for(var x = 0, y = 0; x < dist.x || y < dist.y;){
+            if((0.5+x) / dist.x < (0.5+y) / dist.y){
+                current.x += sign.x
+                x++
+            }else{
+                current.y += sign.y
+                y++
+            }
+            res.push(current.c())
+        }
+        return res
     }
 
     function paintEdge(pos:Vector){
@@ -195,7 +226,7 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
         
 
         // drawgridcell(getGridMousePos())
-        drawVertexPos(getVertexMousePos())
+        drawVertexPos(getVertexMousePos(mousepos))
         camera.end()
         
     })
@@ -208,13 +239,11 @@ loadImages(imagenames.map(image => `res/${image}.png` )).then(images => {
     }
 })
 
-function getGridMousePos(){
-    // return abs2grid(mousepos)
+function getGridMousePos(mousepos){
     return abs2grid(camera.screen2world(mousepos))
 }
 
-function getVertexMousePos(){
-    // return mousepos.c().div(tilesize).round()
+function getVertexMousePos(mousepos){
     return camera.screen2world(mousepos).c().div(tilesize).round()
 }
 
